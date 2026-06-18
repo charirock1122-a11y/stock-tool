@@ -49,7 +49,7 @@ button{
 }
 
 .calcBtn{
-    background:#28a3f5;
+    background:#28a745;
     color:white;
     float:right;
 }
@@ -77,7 +77,6 @@ button{
     margin-top:10px;
     padding-top:10px;
 }
-
 
 </style>
 
@@ -142,17 +141,13 @@ type="number">
 
 <button class="addBtn"
 onclick="addRow()">
-
 ＋購入履歴追加
-
 </button>
 
 
 <button class="calcBtn"
 onclick="calculate()">
-
 含み益を計算
-
 </button>
 
 
@@ -171,7 +166,17 @@ onclick="calculate()">
 <script>
 
 
-// Enterキーで計算
+// 起動時に復元
+
+window.onload=function(){
+
+loadData();
+
+};
+
+
+
+// Enterキー対応
 
 document.addEventListener(
 "keydown",
@@ -189,7 +194,7 @@ calculate();
 
 
 
-function addRow(){
+function addRow(price="", share=""){
 
 
 let div =
@@ -204,10 +209,10 @@ div.innerHTML =
 '<button class="deleteBtn" onclick="removeRow(this)">×</button>'+
 
 '<label>購入単価（円）</label>'+
-'<input class="buyPrice" type="number">'+
+'<input class="buyPrice" type="number" value="'+price+'">'+
 
 '<label>購入株数</label>'+
-'<input class="shares" type="number">';
+'<input class="shares" type="number" value="'+share+'">';
 
 
 
@@ -223,24 +228,9 @@ document.getElementById("purchaseRows")
 
 function removeRow(btn){
 
-
-let rows =
-document.getElementsByClassName(
-"purchaseRow"
-);
-
-
-if(rows.length<=1){
-
-alert("最低1件必要です");
-
-return;
-
-}
-
-
 btn.parentNode.remove();
 
+saveData();
 
 }
 
@@ -338,20 +328,17 @@ document.getElementById("result")
 
 
 "平均取得単価："+
-Math.round(average)
-.toLocaleString()+
+Math.round(average).toLocaleString()+
 "円<br>"+
 
 
 "保有株数："+
-totalShares
-.toLocaleString()+
+totalShares.toLocaleString()+
 "株<br>"+
 
 
 "現在株価："+
-currentPrice
-.toLocaleString()+
+currentPrice.toLocaleString()+
 "円<br><br>"+
 
 
@@ -361,8 +348,7 @@ currentPrice
 
 
 "含み益："+
-Math.round(profit)
-.toLocaleString()+
+Math.round(profit).toLocaleString()+
 "円"+
 
 
@@ -373,11 +359,118 @@ Math.round(profit)
 
 
 
-// 結果へスクロール
+saveData();
+
+
 
 document.getElementById("result")
 .scrollIntoView({
 behavior:"smooth"
+});
+
+
+}
+
+
+
+
+// 保存
+
+function saveData(){
+
+
+let data={
+
+
+currentPrice:
+document.getElementById("currentPrice").value,
+
+
+rows:[]
+
+
+};
+
+
+
+let prices =
+document.getElementsByClassName("buyPrice");
+
+
+let shares =
+document.getElementsByClassName("shares");
+
+
+
+for(let i=0;i<prices.length;i++){
+
+
+data.rows.push({
+
+price:prices[i].value,
+
+share:shares[i].value
+
+});
+
+
+}
+
+
+
+localStorage.setItem(
+"stockData",
+JSON.stringify(data)
+);
+
+
+}
+
+
+
+
+
+// 復元
+
+function loadData(){
+
+
+let data =
+localStorage.getItem("stockData");
+
+
+
+if(!data){
+
+return;
+
+}
+
+
+
+data =
+JSON.parse(data);
+
+
+
+document.getElementById("currentPrice")
+.value =
+data.currentPrice;
+
+
+
+document.getElementById("purchaseRows")
+.innerHTML="";
+
+
+
+data.rows.forEach(row=>{
+
+addRow(
+row.price,
+row.share
+);
+
 });
 
 
