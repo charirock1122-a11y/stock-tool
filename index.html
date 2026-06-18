@@ -8,7 +8,6 @@
 
 <title>株式含み益計算</title>
 
-
 <style>
 
 body{
@@ -29,7 +28,7 @@ body{
     padding:15px;
     margin-bottom:15px;
     border-radius:10px;
-    box-shadow:0 2px 5px rgba(0,0,0,.1);
+    box-shadow:0 2px5px rgba(0,0,0,.1);
 }
 
 
@@ -37,6 +36,7 @@ input{
     width:100%;
     padding:8px;
     margin:5px 0 10px;
+    box-sizing:border-box;
 }
 
 
@@ -70,15 +70,15 @@ button{
 
 .profit{
     color:green;
-    font-size:20px;
     font-weight:bold;
+    font-size:20px;
 }
 
 
 .loss{
     color:red;
-    font-size:20px;
     font-weight:bold;
+    font-size:20px;
 }
 
 
@@ -90,7 +90,6 @@ button{
 
 
 </style>
-
 
 </head>
 
@@ -107,23 +106,19 @@ button{
 <h2>株式含み益計算</h2>
 
 
-<div>
+<label>
+銘柄名
+</label>
 
-銘柄：
-
-<input id="symbol" value="4413">
-
-<br>
+<input id="symbol" value="ボードルア(4413)">
 
 
-現在株価：
 
-<b id="price">
-取得中...
-</b>
+<label>
+現在株価（円）
+</label>
 
-
-</div>
+<input id="currentPrice" type="number">
 
 
 
@@ -139,13 +134,17 @@ onclick="removeRow(this)">
 </button>
 
 
-購入単価
+<label>
+購入単価（円）
+</label>
 
 <input class="buyPrice"
 type="number">
 
 
+<label>
 購入株数
+</label>
 
 <input class="shares"
 type="number">
@@ -174,7 +173,6 @@ onclick="calculate()">
 </button>
 
 
-
 </div>
 
 
@@ -182,80 +180,14 @@ onclick="calculate()">
 <div id="result"></div>
 
 
+
 </div>
-
-
 
 
 
 <script>
 
 
-let currentPrice=0;
-
-
-
-// Yahoo Finance取得
-
-async function getPrice(){
-
-
-let code =
-document.getElementById("symbol").value;
-
-
-
-let url =
-"https://query1.finance.yahoo.com/v8/finance/chart/"
-+code+".T";
-
-
-
-try{
-
-
-let res =
-await fetch(url);
-
-
-
-let data =
-await res.json();
-
-
-
-currentPrice =
-data.chart.result[0]
-.meta.regularMarketPrice;
-
-
-
-document.getElementById("price")
-.innerHTML =
-currentPrice.toLocaleString()+"円";
-
-
-
-}catch(e){
-
-
-document.getElementById("price")
-.innerHTML="取得失敗";
-
-
-}
-
-
-}
-
-
-
-getPrice();
-
-
-
-
-// 行追加
 
 function addRow(){
 
@@ -267,15 +199,14 @@ document.createElement("div");
 div.className="purchaseRow";
 
 
-div.innerHTML=
-
+div.innerHTML =
 
 '<button class="deleteBtn" onclick="removeRow(this)">×</button>'+
 
-'購入単価'+
+'<label>購入単価（円）</label>'+
 '<input class="buyPrice" type="number">'+
 
-'購入株数'+
+'<label>購入株数</label>'+
 '<input class="shares" type="number">';
 
 
@@ -288,7 +219,6 @@ document.getElementById("purchaseRows")
 
 
 
-//削除
 
 function removeRow(btn){
 
@@ -297,7 +227,6 @@ let rows =
 document.getElementsByClassName(
 "purchaseRow"
 );
-
 
 
 if(rows.length<=1){
@@ -317,8 +246,24 @@ btn.parentNode.remove();
 
 
 
-
 function calculate(){
+
+
+let currentPrice =
+Number(
+document.getElementById("currentPrice").value
+);
+
+
+
+if(currentPrice<=0){
+
+alert("現在株価を入力してください");
+
+return;
+
+}
+
 
 
 let prices =
@@ -343,21 +288,21 @@ let totalShares=0;
 for(let i=0;i<prices.length;i++){
 
 
-let p =
+let price =
 Number(prices[i].value);
 
 
-let s =
+let share =
 Number(shares[i].value);
 
 
 
-if(p>0 && s>0){
+if(price>0 && share>0){
 
 
-totalCost += p*s;
+totalCost += price*share;
 
-totalShares += s;
+totalShares += share;
 
 
 }
@@ -377,7 +322,7 @@ return;
 
 
 let average =
-totalCost/totalShares;
+totalCost / totalShares;
 
 
 
@@ -387,21 +332,27 @@ let profit =
 
 
 
+let symbol =
+document.getElementById("symbol")
+.value;
+
+
+
 document.getElementById("result")
-.innerHTML=
+.innerHTML =
 
 
 '<div class="card">'+
+
+"<h3>"+symbol+"</h3>"+
 
 "平均取得単価："+
 Math.round(average).toLocaleString()+
 "円<br>"+
 
-
 "保有株数："+
 totalShares.toLocaleString()+
 "株<br>"+
-
 
 "現在株価："+
 currentPrice.toLocaleString()+
@@ -409,8 +360,8 @@ currentPrice.toLocaleString()+
 
 
 '<div class="'+
-(profit>=0?"profit":"loss")
-+'">'+
+(profit>=0?"profit":"loss")+
+'">'+
 
 "含み益："+
 Math.round(profit)
@@ -418,7 +369,6 @@ Math.round(profit)
 "円"+
 
 "</div>"+
-
 
 "</div>";
 
